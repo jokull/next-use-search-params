@@ -1,0 +1,48 @@
+{
+  "name": "@jokull/next-use-query-param",
+  "description": "React hook for type safe search param use in Next.js.",
+  "author": "Jökull Sólberg <jokull@solberg.is>",
+  "homepage": "https://github.com/jokull/next-use-query-param",
+  "version": "0.1.0",
+  "license": "MIT",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "keywords": [
+    "typescript",
+    "react",
+    "hooks"
+  ],
+  "scripts": {
+    "dev": "next dev",
+    "build": "tsc -p tsconfig.json --module esNext --outDir dist --target es6",
+    "clean": "rimraf -rf ./dist",
+    "format": "prettier --write \"**/*.{json,md,mdx,css,scss,yaml,yml}\"",
+    "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
+    "types-check": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "next": "^12.0.0 || ^13.0.0",
+    "react": "^16.8.0  || ^17.0.0 || ^18.0.0",
+    "react-dom": "^16.8.0  || ^17.0.0 || ^18.0.0",
+    "zod": "^3.0.0"
+  },
+  "dependencies": {
+    "zod": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.9",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.9",
+    "eslint": "^8.28.0",
+    "prettier": "^2.7.1",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.9.3"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jokull/next-use-query-param"
+  }
+}
