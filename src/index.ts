@@ -1,5 +1,7 @@
-import { useRouter } from "next/router";
-import { z } from "zod";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { useRouter } from 'next/router';
+import { z } from 'zod';
 
 export function isZodType(
   t: z.ZodTypeAny,
@@ -10,7 +12,7 @@ export function isZodType(
   }
   if (
     t._def?.typeName === z.ZodFirstPartyTypeKind.ZodEffects &&
-    (t as z.ZodEffects<any>)._def.effect.type === "refinement"
+    (t as z.ZodEffects<any>)._def.effect.type === 'refinement'
   ) {
     return isZodType((t as z.ZodEffects<any>).innerType(), type);
   }
@@ -36,7 +38,7 @@ function validateParam<T extends z.ZodDefault<z.ZodTypeAny>>(
     (isZodType(schema, z.ZodFirstPartyTypeKind.ZodNumber) ||
       isZodType(schema, z.ZodFirstPartyTypeKind.ZodBoolean)) &&
     parameter &&
-    typeof parameter === "string"
+    typeof parameter === 'string'
   ) {
     processed = z.preprocess<typeof schema>((x) => {
       try {
@@ -64,8 +66,8 @@ export function useSearchParam<T extends z.ZodDefault<z.ZodTypeAny>>(
 
   let searchParams: URLSearchParams;
 
-  if (router.isReady && router.asPath.includes("?")) {
-    searchParams = new URLSearchParams(router.asPath.split("?", 2).at(1));
+  if (router.isReady && router.asPath.includes('?')) {
+    searchParams = new URLSearchParams(router.asPath.split('?', 2).at(1));
   } else {
     searchParams = new URLSearchParams();
   }
