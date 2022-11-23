@@ -5,14 +5,14 @@ Type-safe query param handling for [Next.js](https://nextjs.org/) using zod.
 ## Install
 
 ```
-npm install @jokull/next-use-query-param
+npm install @jokullsolberg/next-use-query-param
 ```
 
 ## Example usage
 
 ```tsx
 function Counter() {
-  const [num, setNum] = useSearchParam("num", z.number().default(1));
+  const [num, setNum] = useSearchParam('num', z.number().default(1));
 
   return (
     <div>
@@ -28,15 +28,15 @@ Another example.
 ```tsx
 function Stepper() {
   const [step, setStep] = useSearchParam(
-    "step",
-    z.enum(["login", "signup", "forgot-password"]).default("signup")
+    'step',
+    z.enum(['login', 'signup', 'forgot-password']).default('signup')
   );
 
   return (
     <div>
-      {step === "login" ? <Login /> : null}
-      {step === "signup" ? <Signup /> : null}
-      {step === "forgot-password" ? <ForgotPassword /> : null}
+      {step === 'login' ? <Login /> : null}
+      {step === 'signup' ? <Signup /> : null}
+      {step === 'forgot-password' ? <ForgotPassword /> : null}
     </div>
   );
 }

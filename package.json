@@ -1,17 +1,19 @@
 {
-  "name": "@jokull/next-use-query-param",
+  "name": "@jokullsolberg/next-use-query-param",
   "public": true,
   "description": "React hook for type safe search param use in Next.js.",
   "author": "Jökull Sólberg <jokull@solberg.is>",
   "homepage": "https://github.com/jokull/next-use-query-param",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "license": "MIT",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "keywords": [
     "typescript",
     "react",
-    "hooks"
+    "hooks",
+    "zod",
+    "nextjs"
   ],
   "scripts": {
     "dev": "next dev --port 4200",
