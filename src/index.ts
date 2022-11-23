@@ -109,7 +109,11 @@ export function useSearchParam<T extends z.ZodDefault<z.ZodTypeAny>>(
     } else {
       newSearchParams.set(key, stringified);
     }
-    void router.push(`${router.pathname}?${newSearchParams.toString()}`);
+    void router.push(
+      `${router.pathname}${
+        newSearchParams.toString() ? '?' : ''
+      }${newSearchParams.toString()}`
+    );
   }
 
   return [value, setValue];
