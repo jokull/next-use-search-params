@@ -58,6 +58,24 @@ function validateParam<T extends z.ZodDefault<z.ZodTypeAny>>(
   }
 }
 
+/**
+ * Follow and update URL type safe search parameters
+ *
+ * @param key - The name of the search param key to track and modify
+ * @param schema - The Zod schema, must have a `.default(value)`
+ * @returns The `value` and `setValue` just like `useState` does
+ *
+ * @example Using search param to flip between page sections
+ * ```tsx
+ * function Stepper() {
+ *   const [step, setStep] = useSearchParam(
+ *     "step",
+ *     z.enum(["login", "signup"]).default("signup")
+ *   );
+ *   return (step === "login" ? <Login /> : <Signup />);
+ * }
+ * ```
+ */
 export function useSearchParam<T extends z.ZodDefault<z.ZodTypeAny>>(
   key: string,
   schema: T
@@ -74,7 +92,7 @@ export function useSearchParam<T extends z.ZodDefault<z.ZodTypeAny>>(
 
   const value = validateParam(
     schema,
-    searchParams.get(key) ?? schema._def.defaultValue()
+    searchParams.has(key) ? searchParams.get(key) : schema._def.defaultValue()
   );
 
   function setValue(newValue: z.infer<T>) {

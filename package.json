@@ -14,12 +14,13 @@
     "hooks"
   ],
   "scripts": {
-    "dev": "next dev",
-    "build": "tsc -p tsconfig.json --module esNext --outDir dist --target es6",
+    "dev": "next dev --port 4200",
+    "build": "tsc -p tsconfig.build.json --module esNext --outDir dist --target es6",
     "clean": "rimraf -rf ./dist",
     "format": "prettier --write \"**/*.{json,md,mdx,css,scss,yaml,yml}\"",
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
-    "types-check": "tsc --noEmit"
+    "types-check": "tsc --noEmit",
+    "test": "playwright test"
   },
   "peerDependencies": {
     "next": "^12.0.0 || ^13.0.0",
@@ -31,6 +32,7 @@
     "zod": "^3.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.28.0",
     "@types/node": "^18.11.9",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.9",
@@ -43,6 +45,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.31.11",
+    "next": "^13.0.4",
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
     "typescript": "^4.9.3"
