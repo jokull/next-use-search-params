@@ -51,9 +51,12 @@ Default values are required. Let me know if this is annoying.
 
 Keeping state in search params is user friendly and has DX benefits
 
-- State lives in search params, like a poor man's global `Context`
-- Browser back button works and updates state
-- zod is a powerful tool to create types
+- State lives in search params, like a poor man's global `Context`.
+- Browser back button works and updates state.
+- zod is a powerful tool to validate data and type values.
+- Default values are not displayed in the URL to keep it clean.
+- Because state is global multiple components can bind simultaneously to the same param. This helps
+  avoid prop drilling `onSuccess` handlers.
 
 ## FAQ
 
