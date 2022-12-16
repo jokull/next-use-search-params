@@ -1,12 +1,35 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { useRouter } from 'next/router';
 import { z } from 'zod';
 
-export function isZodType(
-  t: z.ZodTypeAny,
-  type: z.ZodFirstPartyTypeKind
-): boolean {
+type ZodCoercePrimitives = {
+  [K in keyof typeof z.coerce]: ReturnType<typeof z.coerce[K]>;
+};
+
+type ZodCoercePrimitiveNames = keyof ZodCoercePrimitives;
+
+type ZodCoercePrimitiveBaseTypes =
+  | ZodCoercePrimitives[ZodCoercePrimitiveNames]
+  | z.ZodEnum<any>;
+
+type ZodCoercePrimitiveTypes =
+  | ZodCoercePrimitiveBaseTypes
+  | z.ZodDefault<ZodCoercePrimitiveBaseTypes>;
+
+type UseParamSchema = { [key: string]: ZodCoercePrimitiveTypes };
+
+type UseParams<T> = T extends UseParamSchema
+  ? {
+      [K in keyof T]: z.infer<T[K]>;
+    }
+  : never;
+
+function getDefaultValue(def: ZodCoercePrimitiveTypes['_def']) {
+  if ('defaultValue' in def) {
+    return def.defaultValue();
+  }
+}
+
+function isZodType(t: z.ZodTypeAny, type: z.ZodFirstPartyTypeKind): boolean {
   if (t._def?.typeName === type) {
     return true;
   }
@@ -22,89 +45,73 @@ export function isZodType(
   return false;
 }
 
-export function withoutTransform(t: z.ZodTypeAny): z.ZodTypeAny {
-  if (t._def?.typeName === z.ZodFirstPartyTypeKind.ZodEffects) {
-    return withoutTransform((t as z.ZodEffects<any>).innerType());
-  }
-  return t;
-}
-
-function validateParam<T extends z.ZodDefault<z.ZodTypeAny>>(
+function validateParam<T extends ZodCoercePrimitiveTypes>(
   schema: T,
-  parameter: string | null
+  parameter: z.infer<T>
 ): z.infer<T> {
-  let processed;
-  if (
-    (isZodType(schema, z.ZodFirstPartyTypeKind.ZodNumber) ||
-      isZodType(schema, z.ZodFirstPartyTypeKind.ZodBoolean)) &&
-    parameter &&
-    typeof parameter === 'string'
-  ) {
-    processed = z.preprocess<typeof schema>((x) => {
-      try {
-        return JSON.parse(x as string);
-      } catch {
-        return x;
-      }
-    }, schema);
-  } else {
-    processed = schema;
-  }
   try {
-    const parsed: z.infer<T> = processed.parse(parameter);
+    const parsed: z.infer<T> = schema.parse(parameter);
     return parsed;
   } catch (error) {
-    return schema._def.defaultValue();
+    return getDefaultValue(schema._def);
   }
 }
 
 /**
  * Follow and update URL type safe search parameters
  *
- * @param key - The name of the search param key to track and modify
- * @param schema - The Zod schema, must have a `.default(value)`
- * @returns The `value` and `setValue` just like `useState` does
+ * @param schemas - Object of param name keys and zod schemas (must have `.default(value)` for each
+ * schema)
+ * @returns Object of coerced values and `setParam` to update a single parameter
  *
  * @example Using search param to flip between page sections
  * ```tsx
- * function Stepper() {
- *   const [step, setStep] = useSearchParam(
- *     "step",
- *     z.enum(["login", "signup"]).default("signup")
- *   );
- *   return (step === "login" ? <Login /> : <Signup />);
+ * function Component() {
+ *   const [{ screen }, setSearchParam] = useSearchParams({
+ *     screen: z.enum(['login', 'signup']).default('login'),
+ *   });
+ *   return screen === 'login' ? <Login /> : <Signup />;
  * }
  * ```
  */
-export function useSearchParam<T extends z.ZodDefault<z.ZodTypeAny>>(
-  key: string,
-  schema: T
-): [z.infer<T>, (newValue: z.infer<T>) => void] {
+export function useSearchParams<T extends UseParamSchema>(schema: T) {
   const router = useRouter();
 
   let searchParams: URLSearchParams;
 
   if (router.isReady && router.asPath.includes('?')) {
-    searchParams = new URLSearchParams(router.asPath.split('?', 2).at(1));
+    searchParams = new URLSearchParams(router.asPath.split('?', 2)[1]);
   } else {
     searchParams = new URLSearchParams();
   }
 
-  const value = validateParam(
-    schema,
-    searchParams.has(key) ? searchParams.get(key) : schema._def.defaultValue()
-  );
+  const entries = Object.entries(schema).map(([key, paramSchema]) => {
+    const validatedValue = validateParam(
+      paramSchema,
+      searchParams.get(key) ?? getDefaultValue(paramSchema._def)
+    );
+    return [key, validatedValue];
+  });
 
-  function setValue(newValue: z.infer<T>) {
+  const obj = Object.fromEntries(entries) as UseParams<T>;
+
+  function setSearchParam<K extends keyof T & string>(
+    key: K,
+    newValue: z.infer<T[K]>
+  ) {
+    const paramSchema = schema[key];
     const newSearchParams = new URLSearchParams(searchParams);
-    const validated = validateParam(schema, newValue);
-    const stringified =
-      isZodType(schema, z.ZodFirstPartyTypeKind.ZodNumber) ||
-      isZodType(schema, z.ZodFirstPartyTypeKind.ZodBoolean)
-        ? JSON.stringify(validated)
-        : newValue;
+    const validated = validateParam(paramSchema, newValue);
+    const stringified = isZodType(paramSchema, z.ZodFirstPartyTypeKind.ZodDate)
+      ? (validated as Date).toISOString()
+      : isZodType(paramSchema, z.ZodFirstPartyTypeKind.ZodNumber) ||
+        isZodType(paramSchema, z.ZodFirstPartyTypeKind.ZodBoolean)
+      ? JSON.stringify(validated)
+      : (newValue as string);
 
-    if (newValue === schema._def.defaultValue()) {
+    const defaultValue = getDefaultValue(paramSchema._def);
+
+    if (newValue === defaultValue) {
       newSearchParams.delete(key);
     } else {
       newSearchParams.set(key, stringified);
@@ -116,5 +123,5 @@ export function useSearchParam<T extends z.ZodDefault<z.ZodTypeAny>>(
     );
   }
 
-  return [value, setValue];
+  return [obj, setSearchParam] as const;
 }

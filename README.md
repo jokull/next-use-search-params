@@ -1,43 +1,66 @@
-# `useQueryParam()`
+# `useSearchParams()`
 
-Type-safe query param handling for [Next.js](https://nextjs.org/) using zod.
+Type-safe search param handling for [Next.js](https://nextjs.org/) using zod.
 
 ## Install
 
 ```
-npm install @jokullsolberg/next-use-query-param
+npm install @jokullsolberg/next-use-search-params
 ```
 
 ## Example usage
 
 ```tsx
-function Counter() {
-  const [num, setNum] = useSearchParam('num', z.number().default(1));
-
+function Signup() {
+  const [{ foo, bar, date }, setSearchParam] = useSearchParams({
+    foo: z.string().default(''),
+    bar: z.coerce.number().default(1),
+    date: z.coerce.date().default(new Date()),
+    screen: z.enum(['login', 'signup']).default('login'),
+  });
   return (
-    <div>
-      <pre>{num}</pre>
-      <button onClick={() => setNum(num + 1)}>Click me</button>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        alignItems: 'start',
+      }}
+    >
+      <h2>Signup</h2>
+      <input
+        value={foo}
+        onChange={(event) => setSearchParam('foo', event.target.value)}
+      />
+      <input
+        type="number"
+        value={String(bar)}
+        onChange={(event) => setSearchParam('bar', event.target.valueAsNumber)}
+      />
+      <input
+        type="date"
+        value={date.toISOString().split('T')[0]}
+        onChange={(event) =>
+          setSearchParam('date', event.target.valueAsDate ?? new Date())
+        }
+      />
+      <p>{date.toISOString()}</p>
+      <button onClick={() => setSearchParam('screen', 'login')}>Login</button>
     </div>
   );
 }
-```
 
-Another example.
-
-```tsx
-function Stepper() {
-  const [step, setStep] = useSearchParam(
-    'step',
-    z.enum(['login', 'signup', 'forgot-password']).default('signup')
-  );
-
-  return (
+export default function Page() {
+  const [{ screen }, setSearchParam] = useSearchParams({
+    screen: z.enum(['login', 'signup']).default('login'),
+  });
+  return screen === 'login' ? (
     <div>
-      {step === 'login' ? <Login /> : null}
-      {step === 'signup' ? <Signup /> : null}
-      {step === 'forgot-password' ? <ForgotPassword /> : null}
+      Login{' '}
+      <button onClick={() => setSearchParam('screen', 'signup')}>Signup</button>
     </div>
+  ) : (
+    <Signup />
   );
 }
 ```
@@ -61,8 +84,9 @@ Keeping state in search params is user friendly and has DX benefits
 ## FAQ
 
 - **URLSearchParams support multiple values for the same key, does this tool too?** No.
-- **Values of URLSearchParams are always strings, do I need to zod `preprocess` them?** No. It is
-  done by calling `JSON.parse` and `JSON.strinfify` on boolean and number values automatically.
+- **Values of URLSearchParams are always strings, do I need to zod `preprocess` them?** No. Use the
+  new `z.coerce` stuff instead. Internally we call `JSON.stringify` or `Date.toISOString()` to
+  marshal back to URL.
 - **What happens to unexpected or illegal values?** They are ignored and default values are used
   instead.
 

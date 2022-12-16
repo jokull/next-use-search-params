@@ -15,4 +15,7 @@ module.exports = {
   },
   ignorePatterns: ['dist', '*.js'],
   plugins: ['@typescript-eslint', 'react'],
+  rules: {
+    '@typescript-eslint/no-explicit-any': 'ignore',
+  },
 };
